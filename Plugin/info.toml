@@ -1,0 +1,9 @@
+[meta]
+name        = "Trackmania AI"
+author      = "Thijnmens"
+category    = "Testing"
+version		= "0.1"
+
+[script]
+dependencies	= [ "VehicleState" ]
+timeout = 0
