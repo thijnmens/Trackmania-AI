@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Trackmania_AI_Trainer.Data;
+namespace Server.Json;
 
 public class VehicleData
 {
@@ -136,8 +136,8 @@ public class VehicleData
 
     [JsonProperty("WorldVel")] public string WorldVel;
 
-    public string ToJson()
+    public string ToJson(Formatting formatting = Formatting.None)
     {
-        return JsonConvert.SerializeObject(this, Formatting.None);
+        return JsonConvert.SerializeObject(this, formatting);
     }
 }

@@ -1,4 +1,4 @@
-void Main() {
+Svoid Main() {
 	print("Plugin Started");
 }
 

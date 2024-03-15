@@ -6,21 +6,12 @@ from gymnasium.spaces import Discrete, Box
 
 class ShowerEnv(Env):
 	def __init__(self):
-		self.action_space = Discrete(4)  # Down, Nothing, Up, End
+		self.action_space = Discrete(3)  # Down, Nothing, Up
 		self.observation_space = Box(low=0, high=100, shape=(1,))  # Shower temperature, between 0 and 100
 		self.state = random.randint(35, 41)  # Starting temperature
 		self.timeLimit = 200  # Amount of actions
 
 	def step(self, action):
-		# End
-		if action == 3:
-			if 37 <= self.state <= 39:
-				reward = self.timeLimit + 10
-				# print(f"reward: {reward}")
-			else:
-				reward = self.timeLimit * -1
-				# print(f"Pain: {self.state}")
-			return self.state, reward, True, {}, {}
 
 		self.state += action - 1
 		self.timeLimit -= 1
