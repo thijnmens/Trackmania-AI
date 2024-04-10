@@ -16,10 +16,13 @@ internal static class Program
 
 		using var server = serverBuilder.Build();
 		
+		Connection.Init();
 		server.Start();
 		
 		Console.WriteLine("Press enter to quit");
 		Console.ReadLine();
+		server.Stop();
+		Connection.Close();
 	}
 }
 

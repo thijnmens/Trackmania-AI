@@ -12,7 +12,7 @@ class Vision:
 		"""
 
 		# Load level mesh
-		mesh = o3d.io.read_triangle_mesh(path)
+		mesh = o3d.io.read_triangle_mesh(o3d.data.ArmadilloMesh().path if path == '' else path)
 		self.mesh = o3d.t.geometry.TriangleMesh.from_legacy(mesh)
 
 		# Create scene and add mesh
@@ -28,6 +28,12 @@ class Vision:
 					height_px: int = 480):
 		"""
 		Shows render of scene from position
+		:param fov_deg: The horizontal field of view in degrees
+		:param center: The point the camera is looking at [x, y, z]
+		:param eye: The position of the camera [x, y, z]
+		:param up: The up-vector of the camera [x, y, z]
+		:param width_px: The width of the image in px
+		:param height_px: The height of the image in px
 		"""
 
 		# Create camera
@@ -44,5 +50,6 @@ class Vision:
 		ans = self.scene.cast_rays(rays)
 
 		# Create and show image
+		print(ans['t_hit'].numpy())
 		plt.imshow(ans['t_hit'].numpy())
 		plt.show()
