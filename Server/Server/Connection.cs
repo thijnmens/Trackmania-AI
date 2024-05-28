@@ -21,7 +21,7 @@ public static class Connection
 	
 	public static void SendMessage(string vehicleData)
 	{
-		RequestSocket.SendFrame(_count.ToString() + vehicleData);
+		RequestSocket.SendFrame(vehicleData);
 		RequestSocket.ReceiveFrameString();
 		_count++;
 	}

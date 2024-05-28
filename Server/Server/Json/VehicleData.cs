@@ -8,7 +8,7 @@ public class VehicleData
 
     [JsonProperty("BulletTimeNormed")] public int BulletTimeNormed;
 
-    [JsonProperty("CurGear")] public int CurGear;
+    [JsonProperty("CurGear")] public int CurGear = 0;
 
     [JsonProperty("Dir")] public string Dir;
 
