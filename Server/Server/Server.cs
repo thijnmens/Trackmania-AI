@@ -3,7 +3,6 @@ using System.Text.Json.Serialization;
 using Grapevine;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
-using Server.Json;
 
 namespace Server;
 
@@ -16,13 +15,5 @@ public class HttpServer
 		await using var data = context.Request.InputStream;
 		using var streamReader = new StreamReader(data, Encoding.UTF8);
 		Connection.SendMessage(await streamReader.ReadToEndAsync());
-		
-		/*
-				Console.Clear();
-				var vehicleData = JsonConvert.DeserializeObject<VehicleData>(await streamReader.ReadToEndAsync()) ??
-				                  new VehicleData();
-				Console.WriteLine(vehicleData.Position);
-				Console.WriteLine(vehicleData.Dir);
-		*/
 	}
 }
