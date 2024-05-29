@@ -7,17 +7,19 @@ from gymnasium.spaces import Discrete, Box, Dict
 from Connection import Connection
 from pyvjoystick import vigem as vg
 
+from src.VehicleData import VehicleData
+
 
 class TrackmaniaEnv(Env):
 	def __init__(self):
 		self.action_space = Box(low=-1, high=1, shape=(3,))
-		self.observation_space = Box(low=-999, high=999, shape=(1,))  # Speed
-		self.state = Box(low=-999, high=999, shape=(1,))
+		self.observation_space = Box(low=-999, high=999, shape=(8,))
+		self.state = VehicleData().to_state()
 		self.finished = False  # has AI crossed finish line
 		self.connection = Connection()  # ZMQ connection
 		self.controller = vg.VDS4Gamepad()
 		self.timeSteps = 0
-		self.timeLimit = 100
+		self.timeLimit = 500
 
 		# Respawn car
 		self.controller.press_button(vg.DS4_BUTTONS.DS4_BUTTON_CIRCLE)
@@ -27,10 +29,14 @@ class TrackmaniaEnv(Env):
 
 	def step(self, action):
 		data = self.connection.socket.recv().decode()
+		vehicle_data = json.loads(data, object_hook=lambda p: VehicleData(**p))
+
+		# Update state
+		self.state = vehicle_data.to_state()
 		self.timeSteps += 1
 
 		# Calculate reward
-		reward = self.calculate_reward(json.loads(data))
+		reward = vehicle_data.calculate_reward()
 
 		# Emulate DualShock 4 controller
 		self.emulate_input(action)
@@ -38,24 +44,18 @@ class TrackmaniaEnv(Env):
 		# Perform action
 		self.connection.socket.send_string('')
 
-		time.sleep(0.05)
-		print(reward)
-
 		# Check if no actions left
 		done = self.timeSteps > self.timeLimit
-		return self.state, reward, done, {}, {}
 
-	def calculate_reward(self, data):
-		speedReward = data['FrontSpeed']
-		return speedReward
+		time.sleep(0.005)
+
+		return self.state, reward, done, {}, {}
 
 	def emulate_input(self, action):
 		self.controller.right_trigger_float(action[0])
 		self.controller.left_trigger_float(action[1])
 		self.controller.left_joystick(int(action[2] * 255), 0)
 		self.controller.update()
-
-		print(f"gas: {action[0]}, brake: {action[1]}, steering: {action[2]}")
 
 	def render(self):
 		# No need for rendering
@@ -64,7 +64,7 @@ class TrackmaniaEnv(Env):
 	def reset(self, **kwargs):
 		# Reset environment
 		super().reset(seed=kwargs.get('seed'))
-		self.state = np.array([0]).astype(np.float32)
+		self.state = VehicleData().to_state()
 		self.finished = False
 		self.timeSteps = 0
 

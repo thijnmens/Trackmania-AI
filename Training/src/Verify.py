@@ -2,9 +2,9 @@ import os
 
 from stable_baselines3 import PPO
 
-from src.ShowerEnv import ShowerEnv
+from src.TrackmaniaEnv import TrackmaniaEnv
 
-env = ShowerEnv()
+env = TrackmaniaEnv()
 
 # Define paths
 logPath = os.path.join("../logs")
