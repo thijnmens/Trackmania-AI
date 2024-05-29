@@ -32,13 +32,13 @@ class VehicleData {
 	string toJson() {
 		return "{" +
 			'"speed":' + tostring(speed) +
-			'"acceleration":' + tostring(acceleration) +
-			'"inputLeft":' + tostring(inputLeft) +
-			'"inputRight":' + tostring(inputRight) +
-			'"inputForward":' + tostring(inputForward) +
-			'"inputBackwards":' + tostring(inputBackwards) +
-			'"gear":' + tostring(gear) +
-			'"rpm":' + tostring(rpm) +
+			',"acceleration":' + tostring(acceleration) +
+			',"inputLeft":' + tostring(inputLeft) +
+			',"inputRight":' + tostring(inputRight) +
+			',"inputForward":' + tostring(inputForward) +
+			',"inputBackwards":' + tostring(inputBackwards) +
+			',"gear":' + tostring(gear) +
+			',"rpm":' + tostring(rpm) +
 		"}";
 	}
 }
