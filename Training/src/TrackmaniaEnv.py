@@ -1,16 +1,15 @@
 import json
-import random
 import time
-import numpy as np
 from gymnasium import Env
 from gymnasium.spaces import Discrete, Box, Dict
 from Connection import Connection
 from pyvjoystick import vigem as vg
-
-from src.VehicleData import VehicleData
+from VehicleData import VehicleData
 
 
 class TrackmaniaEnv(Env):
+	TIME_LIMIT = 500 + (60 * 3)  # 3 * 60 actions to account of trackmania respawn timer
+
 	def __init__(self):
 		self.action_space = Box(low=-1, high=1, shape=(3,))
 		self.observation_space = Box(low=-999, high=999, shape=(8,))
@@ -19,7 +18,6 @@ class TrackmaniaEnv(Env):
 		self.connection = Connection()  # ZMQ connection
 		self.controller = vg.VDS4Gamepad()
 		self.timeSteps = 0
-		self.timeLimit = 500
 
 		# Respawn car
 		self.controller.press_button(vg.DS4_BUTTONS.DS4_BUTTON_CIRCLE)
@@ -29,7 +27,7 @@ class TrackmaniaEnv(Env):
 
 	def step(self, action):
 		data = self.connection.socket.recv().decode()
-		vehicle_data = json.loads(data, object_hook=lambda p: VehicleData(**p))
+		vehicle_data = json.loads(data, object_hook=lambda p: VehicleData(self.TIME_LIMIT, **p))
 
 		# Update state
 		self.state = vehicle_data.to_state()
@@ -45,7 +43,7 @@ class TrackmaniaEnv(Env):
 		self.connection.socket.send_string('')
 
 		# Check if no actions left
-		done = self.timeSteps > self.timeLimit
+		done = self.timeSteps > self.TIME_LIMIT
 
 		time.sleep(0.005)
 
@@ -71,6 +69,7 @@ class TrackmaniaEnv(Env):
 		# Reset car
 		self.controller.press_button(vg.DS4_BUTTONS.DS4_BUTTON_CIRCLE)
 		self.controller.update()
-		self.controller.release_button(vg.DS4_BUTTONS.DS4_BUTTON_CIRCLE)
+		self.controller.reset()  # Reset all buttons to their default state
 		self.controller.update()
+
 		return self.state, {}

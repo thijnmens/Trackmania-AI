@@ -2,7 +2,7 @@ import os
 
 from stable_baselines3 import PPO
 
-from src.TrackmaniaEnv import TrackmaniaEnv
+from TrackmaniaEnv import TrackmaniaEnv
 
 env = TrackmaniaEnv()
 
