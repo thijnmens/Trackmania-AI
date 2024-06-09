@@ -5,6 +5,8 @@ from gymnasium.spaces import Discrete, Box, Dict
 from Connection import Connection
 from pyvjoystick import vigem as vg
 from VehicleData import VehicleData
+from Raycasting import Raycasting
+import numpy as np
 
 
 class TrackmaniaEnv(Env):
@@ -12,10 +14,11 @@ class TrackmaniaEnv(Env):
 
 	def __init__(self):
 		self.action_space = Box(low=-1, high=1, shape=(3,))
-		self.observation_space = Box(low=-999, high=999, shape=(8,))
+		self.observation_space = Box(low=np.array([[-np.inf] * 180]*9), high=np.array([[np.inf] * 180]*9), shape=(9, 180))
 		self.state = VehicleData().to_state()
 		self.finished = False  # has AI crossed finish line
 		self.connection = Connection()  # ZMQ connection
+		self.raycaster = Raycasting(r"C:\Users\thijn\Downloads\Showcase.obj")
 		self.controller = vg.VDS4Gamepad()
 		self.timeSteps = 0
 
@@ -27,7 +30,7 @@ class TrackmaniaEnv(Env):
 
 	def step(self, action):
 		data = self.connection.socket.recv().decode()
-		vehicle_data = json.loads(data, object_hook=lambda p: VehicleData(self.TIME_LIMIT, **p))
+		vehicle_data: VehicleData = json.loads(data, object_hook=lambda p: VehicleData(self.TIME_LIMIT, **p))
 
 		# Update state
 		self.state = vehicle_data.to_state()

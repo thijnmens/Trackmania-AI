@@ -1,3 +1,7 @@
+import re
+from Raycasting import Raycasting
+
+
 class VehicleData:
 	def __init__(
 			self,
@@ -10,7 +14,9 @@ class VehicleData:
 			inputBackwards: float = 0,
 			gear: int = 0,
 			rpm: float = 0,
-			location: list[float] = [0, 0, 0]
+			location: str = "<0, 0, 0>",
+			direction: str = "<0, 0, 0>",
+			raycaster: Raycasting = Raycasting(r"C:\Users\thijn\Downloads\Showcase.obj")
 		):
 		self.TIME_LIMIT = TIME_LIMIT
 		self.speed: float = speed
@@ -21,10 +27,30 @@ class VehicleData:
 		self.inputBackwards: float = inputBackwards
 		self.gear: int = gear
 		self.rpm: float = rpm
-		self.location: list[float] = location
+		self.location: list[float] = [float(s) for s in re.findall(r'-?\d+\.?\d*', location)]
+		self.direction: list[float] = [float(s) for s in re.findall(r'-?\d+\.?\d*', direction)]
+		self.raycaster: Raycasting = raycaster
 
-	def to_state(self) -> [float]:
-		return [self.speed, self.acceleration, self.inputLeft, self.inputRight, self.inputForward, self.inputBackwards, float(self.gear), self.rpm]
+	def to_state(self) -> list[float]:
+		front_location = [
+			self.location[0] + self.direction[0],
+			self.location[1],  # Y doesn't change for now
+			self.location[2] + self.direction[2],
+		]
+
+		rays = self.raycaster.get_distance(self.location, front_location)
+		length = len(rays)
+		return [
+			[self.speed] * length,
+			[self.acceleration] * length,
+			[self.inputLeft] * length,
+			[self.inputRight] * length,
+			[self.inputForward] * length,
+			[self.inputBackwards] * length,
+			[float(self.gear)] * length,
+			[self.rpm] * length,
+			rays
+		]
 
 	def calculate_reward(self) -> float:
 		speed_rew = self.speed
