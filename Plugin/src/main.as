@@ -29,6 +29,7 @@ class VehicleData {
 	uint gear;
 	float rpm;
 	vec3 location;
+	vec3 direction;
 
 	string toJson() {
 		return "{" +
@@ -41,6 +42,7 @@ class VehicleData {
 			',"gear":' + tostring(gear) +
 			',"rpm":' + tostring(rpm) +
 			',"location":"' + location.ToString() + '"' +
+			',"direction":"' + direction.ToString() + '"' +
 		"}";
 	}
 }
@@ -64,7 +66,8 @@ void SendMessage(CSceneVehicleVisState@ vis) {
 	vehicleData.rpm = VehicleState::GetRPM(vis);
 
 	// Location
-	vehicleData.location = vis.WorldCarUp;
+	vehicleData.location = vis.Position;
+	vehicleData.direction = vis.Dir
 	
 	// Send to C# server
 	Net::HttpPost("http://localhost:1234", vehicleData.toJson(), "application/json").Start();
