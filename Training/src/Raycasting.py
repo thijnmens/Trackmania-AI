@@ -1,5 +1,5 @@
 import time
-
+import numpy as np
 import open3d as o3d
 import matplotlib.pyplot as plt
 
@@ -15,21 +15,6 @@ class Raycasting:
     def get_image(self, origin: list[float], point: list[float]):
 
         rays = self.scene.create_rays_pinhole(
-            90,
-            point,
-            origin,
-            [0, -1, 0],
-            100,
-            100
-        )
-
-        ans = self.scene.cast_rays(rays)
-
-        plt.imshow(ans['t_hit'].numpy())
-        plt.show()
-
-    def get_distance(self, origin: list[float], point: list[float]):
-        rays = self.scene.create_rays_pinhole(
             180,
             point,
             origin,
@@ -40,4 +25,27 @@ class Raycasting:
 
         ans = self.scene.cast_rays(rays)
 
-        return ans['t_hit'].numpy()[0]
+        plt.imshow(ans['t_hit'].numpy())
+        plt.show()
+
+    def get_distance(self, origin: list[float], point: list[float]):
+        rays = self.scene.create_rays_pinhole(
+            90,
+            point,
+            origin,
+            [0, -1, 0],
+            180,
+            1
+        )
+
+        ans = self.scene.cast_rays(rays)
+
+        distances: list[float] = []
+
+        for i, distance in enumerate(ans['t_hit'].numpy()[0]):
+            if distance == np.inf:
+                distances.append(999)
+            else:
+                distances.append(distance)
+
+        return distances

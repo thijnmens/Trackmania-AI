@@ -22,7 +22,7 @@ if load:
 else:
     model = PPO('MlpPolicy', env, verbose=0, tensorboard_log=logPath)
 
-subprocess.Popen(r"C:\Users\thijn\Desktop\trackmania ai\Server\Server\bin\Debug\net7.0\Server.exe")
+subprocess.Popen(r"C:\Users\thijn\Documents\school\sem 4\individual\Server\Server\bin\Debug\net7.0\Server.exe")
 
 generation = 0
 while generation <= generations:

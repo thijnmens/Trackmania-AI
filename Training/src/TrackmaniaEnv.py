@@ -10,11 +10,11 @@ import numpy as np
 
 
 class TrackmaniaEnv(Env):
-	TIME_LIMIT = 500 + (60 * 3)  # 3 * 60 actions to account of trackmania respawn timer
+	TIME_LIMIT = 1500 + (60 * 3)  # 3 * 60 actions to account of trackmania respawn timer
 
 	def __init__(self):
 		self.action_space = Box(low=-1, high=1, shape=(3,))
-		self.observation_space = Box(low=np.array([[-np.inf] * 180]*9), high=np.array([[np.inf] * 180]*9), shape=(9, 180))
+		self.observation_space = Box(low=-np.inf, high=np.inf, shape=(188,))
 		self.state = VehicleData().to_state()
 		self.finished = False  # has AI crossed finish line
 		self.connection = Connection()  # ZMQ connection
