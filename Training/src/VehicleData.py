@@ -35,9 +35,9 @@ class VehicleData:
 
 	def to_state(self):
 		front_location = [
-			self.location[0] + (self.direction[0] * 15),
+			self.location[0] + (self.direction[0] * 30),
 			10.457,  # Y doesn't change for now
-			self.location[2] + (self.direction[2] * 15),
+			self.location[2] + (self.direction[2] * 30),
 		]
 
 		# self.raycaster.get_image(self.location, front_location)
@@ -60,8 +60,11 @@ class VehicleData:
 		speed_rew = self.speed ** 2
 		accel_rew = self.acceleration
 		gear_rew = self.gear
-		crash_pen = False
+		wall_pen = False
+		crash_pen = 0
 		for i, distance in enumerate(self.rays):
 			if distance <= 3:
-				crash_pen = True
-		return ((speed_rew + accel_rew) * gear_rew) * (0 if crash_pen else 1) / 1000
+				wall_pen = True
+		if self.acceleration < -100:
+			crash_pen = -1000
+		return ((speed_rew + accel_rew) * gear_rew) * (0 if wall_pen else 1) + crash_pen / 1000

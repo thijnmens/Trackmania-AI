@@ -15,16 +15,17 @@ class Raycasting:
     def get_image(self, origin: list[float], point: list[float]):
 
         rays = self.scene.create_rays_pinhole(
-            180,
+            90,
             point,
             origin,
             [0, -1, 0],
-            180,
-            1
+            500,
+            10
         )
 
         ans = self.scene.cast_rays(rays)
 
+        plt.close('all')
         plt.imshow(ans['t_hit'].numpy())
         plt.show()
 
@@ -34,18 +35,19 @@ class Raycasting:
             point,
             origin,
             [0, -1, 0],
-            180,
-            1
+            500,
+            10
         )
 
         ans = self.scene.cast_rays(rays)
 
         distances: list[float] = []
 
-        for i, distance in enumerate(ans['t_hit'].numpy()[0]):
-            if distance == np.inf:
-                distances.append(999)
-            else:
-                distances.append(distance)
+        for _, row in enumerate(ans['t_hit'].numpy()):
+            for i, distance in enumerate(row):
+                if distance == np.inf:
+                    distances.append(999)
+                else:
+                    distances.append(distance)
 
         return distances

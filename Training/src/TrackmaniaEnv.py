@@ -1,5 +1,7 @@
 import json
 import time
+
+import keyboard
 from gymnasium import Env
 from gymnasium.spaces import Discrete, Box, Dict
 from Connection import Connection
@@ -10,69 +12,76 @@ import numpy as np
 
 
 class TrackmaniaEnv(Env):
-	TIME_LIMIT = 1500 + (60 * 3)  # 3 * 60 actions to account of trackmania respawn timer
+    TIME_LIMIT = 1500 + (60 * 3)  # 3 * 60 actions to account of trackmania respawn timer
 
-	def __init__(self):
-		self.action_space = Box(low=-1, high=1, shape=(3,))
-		self.observation_space = Box(low=-np.inf, high=np.inf, shape=(188,))
-		self.state = VehicleData().to_state()
-		self.finished = False  # has AI crossed finish line
-		self.connection = Connection()  # ZMQ connection
-		self.raycaster = Raycasting(r"C:\Users\thijn\Downloads\Showcase.obj")
-		self.controller = vg.VDS4Gamepad()
-		self.timeSteps = 0
+    def __init__(self):
+        self.action_space = Box(low=-1, high=1, shape=(3,))
+        self.observation_space = Box(low=-999, high=999, shape=(5008,))
+        self.state = VehicleData().to_state()
+        self.finished = False  # has AI crossed finish line
+        self.connection = Connection()  # ZMQ connection
+        self.raycaster = Raycasting(r"C:\Users\thijn\Downloads\Showcase.obj")
+        self.controller = vg.VDS4Gamepad()
+        self.timeSteps = 0
 
-		# Respawn car
-		self.controller.press_button(vg.DS4_BUTTONS.DS4_BUTTON_CIRCLE)
-		self.controller.update()
-		self.controller.release_button(vg.DS4_BUTTONS.DS4_BUTTON_CIRCLE)
-		self.controller.update()
+        # Respawn car
+        self.controller.press_button(vg.DS4_BUTTONS.DS4_BUTTON_CIRCLE)
+        self.controller.update()
+        self.controller.release_button(vg.DS4_BUTTONS.DS4_BUTTON_CIRCLE)
+        self.controller.update()
 
-	def step(self, action):
-		data = self.connection.socket.recv().decode()
-		vehicle_data: VehicleData = json.loads(data, object_hook=lambda p: VehicleData(self.TIME_LIMIT, **p))
+    def step(self, action):
+        data = self.connection.socket.recv().decode()
+        vehicle_data: VehicleData = json.loads(data, object_hook=lambda p: VehicleData(self.TIME_LIMIT, **p))
 
-		# Update state
-		self.state = vehicle_data.to_state()
-		self.timeSteps += 1
+        # Update state
+        self.state = vehicle_data.to_state()
+        self.timeSteps += 1
 
-		# Calculate reward
-		reward = vehicle_data.calculate_reward()
+        # Calculate reward
+        reward = vehicle_data.calculate_reward()
 
-		# Emulate DualShock 4 controller
-		self.emulate_input(action)
+        if vehicle_data.location[0] < 637 and vehicle_data.location[2] < 604:
+            self.finished = True
 
-		# Perform action
-		self.connection.socket.send_string('')
+        # Emulate DualShock 4 controller
+        self.emulate_input(action)
 
-		# Check if no actions left
-		done = self.timeSteps > self.TIME_LIMIT
+        # Perform action
+        self.connection.socket.send_string('')
 
-		time.sleep(0.005)
+        # Check if no actions left
+        done = self.timeSteps > self.TIME_LIMIT or self.finished
 
-		return self.state, reward, done, {}, {}
+        time.sleep(0.005)
 
-	def emulate_input(self, action):
-		self.controller.right_trigger_float(action[0])
-		self.controller.left_trigger_float(action[1])
-		self.controller.left_joystick(int(action[2] * 255), 0)
-		self.controller.update()
+        return self.state, reward, done, {}, {}
 
-	def render(self):
-		# No need for rendering
-		pass
+    def emulate_input(self, action):
+        self.controller.right_trigger_float(action[0])
+        self.controller.left_trigger_float(action[1])
+        self.controller.left_joystick(int(action[2] * 255), 0)
+        self.controller.update()
 
-	def reset(self, **kwargs):
-		# Reset environment
-		super().reset(seed=kwargs.get('seed'))
-		self.state = VehicleData().to_state()
-		self.finished = False
-		self.timeSteps = 0
+    def render(self):
+        # No need for rendering
+        pass
 
-		# Reset car
-		self.controller.press_button(vg.DS4_BUTTONS.DS4_BUTTON_CIRCLE)
-		self.controller.update()
-		self.controller.reset()  # Reset all buttons to their default state
-		self.controller.update()
+    def reset(self, **kwargs):
+        # Reset environment
+        super().reset(seed=kwargs.get('seed'))
+        self.state = VehicleData().to_state()
+        self.finished = False
+        self.timeSteps = 0
 
-		return self.state, {}
+        # Reset car
+        self.controller.press_button(vg.DS4_BUTTONS.DS4_BUTTON_CROSS)
+        self.controller.update()
+        self.controller.reset()
+        self.controller.update()
+        self.controller.press_button(vg.DS4_BUTTONS.DS4_BUTTON_CIRCLE)
+        self.controller.update()
+        self.controller.reset()  # Reset all buttons to their default state
+        self.controller.update()
+
+        return self.state, {}
